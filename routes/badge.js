@@ -17,7 +17,7 @@ router.get('/:user/:repo/:branch?', function(req, res, next) {
     getStatus(user, repo, branch, function(err, data, contentType) {
 
         if (err) {
-            res.status(500).send(err);
+            res.status(err['status'] || 500).send(err);
         } else {
             res.header('Content-Type', contentType).send(data);
         }
@@ -27,7 +27,11 @@ router.get('/:user/:repo/:branch?', function(req, res, next) {
 function getStatus(user, repo, branch, completion) {
 
     fetchUrlFromRedis(user, repo, branch, function(err, url) {
-        getBadgeData(url, completion);
+        if (err) {
+            completion(err, null, null);
+        } else {
+            getBadgeData(url, completion);
+        }
     });
 }
 
@@ -117,11 +121,20 @@ function fetchBadgeUrl(user, repo, branch, completion) {
             //find the rate limit
             rateLimit(response.headers);
 
-            //we have data
-            var parsed = JSON.parse(data);
-            var state = parsed['state'];
-            var url = urlFromState(state);
-            completion(null, url);
+            var status = response.statusCode;
+            if (status >= 200 && status < 300) {
+                //we have data
+                var parsed = JSON.parse(data);
+                var state = parsed['state'];
+                var url = urlFromState(state);
+                completion(null, url);
+            } else {
+                var err = {
+                    status: status,
+                    message: response.statusMessage
+                };
+                completion(err, null);
+            }
         });
     });
 }
