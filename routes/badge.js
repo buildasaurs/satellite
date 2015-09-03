@@ -5,6 +5,7 @@
 var express = require('express');
 var router = express.Router();
 var https = require('https');
+var http = require('http');
 var db = require('./redis');
 
 //TODO: branch?
@@ -13,16 +14,78 @@ router.get('/:user/:repo/:branch?', function(req, res, next) {
     var user = params.user;
     var repo = params.repo;
     var branch = params.branch || "master";
-    getStatus(user, repo, branch, function(err, status) {
+    getStatus(user, repo, branch, function(err, data, contentType) {
 
-        console.log();
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            res.send(status);
+        }
     });
 });
 
 function getStatus(user, repo, branch, completion) {
 
-    fetchBadgeUrl(user, repo, branch, function(err, status) {
-        console.log();
+    fetchUrlFromRedis(user, repo, branch, function(err, url) {
+        getBadgeData(url, completion);
+    });
+}
+
+function fetchUrlFromRedis(user, repo, branch, completion) {
+
+    var timeout = 60;
+    var key = ["badges", user, repo, branch].join(":");
+    var badge_url = null;
+
+    db().get(key, function(err, reply) {
+        if (err) {
+            completion(err, null);
+        } else {
+            if (reply) {
+                completion(null, reply);
+            } else {
+                //we don't have the url yet
+                fetchBadgeUrl(user, repo, branch, function(err, badgeUrl) {
+                    if (err) {
+                        completion(err, null);
+                    } else {
+                        //we have the badge, save it and complete
+                        db().setex(key, timeout, badgeUrl, function(err) {
+                            if (err) {
+                                completion(err, null);
+                            } else {
+                                completion(null, badgeUrl);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
+}
+
+
+//completion: err, data, content-type
+function getBadgeData(badgeUrl, completion) {
+    //TODO: cache badge image data independently in redis - for hours
+    fetchBadgeData(badgeUrl, completion);
+}
+
+//completion: err, data, content-type
+function fetchBadgeData(badgeUrl, completion) {
+    http.get(badgeUrl, function(response) {
+
+        var contentType = response.headers['content-type'];
+        var data = '';
+        response.on('error', function(err) {
+            console.error(err);
+            completion(err, null);
+        }).on('data', function(d) {
+            data += d;
+        }).on('end', function() {
+            var svg = data;
+            completion(null, svg, contentType);
+        });
     });
 }
 
@@ -44,7 +107,7 @@ function fetchBadgeUrl(user, repo, branch, completion) {
         var data = '';
         response.on('error', function(err) {
             console.error(err);
-        completion(err, null);
+            completion(err, null);
 
         }).on('data', function(d) {
 
@@ -75,7 +138,7 @@ function rateLimit(headers) {
 
 function urlFromState(state) {
 
-    var imgPath = 'https://img.shields.io/badge/';
+    var imgPath = 'http://img.shields.io/badge/';
     if (state === 'success') {
         imgPath = imgPath + 'build-passing-green.svg';
     } else if (state === 'failure') {
@@ -84,14 +147,6 @@ function urlFromState(state) {
         imgPath = imgPath + 'build-unknown-gray.svg';
     }
     return imgPath;
-}
-
-function fetchFromRedis(user, repo, branch, completion) {
-
-    var key = ["badges", user, repo, branch].join(":");
-    db().get(key, function(err, reply) {
-        
-    });
 }
 
 module.exports = router;
