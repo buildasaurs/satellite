@@ -71,12 +71,44 @@ function fetchUrlFromRedis(user, repo, branch, completion) {
 
 //completion: err, data, content-type
 function getBadgeData(badgeUrl, completion) {
-    //TODO: cache badge image data independently in redis - for hours
-    fetchBadgeData(badgeUrl, completion);
+
+    var timeout = 3600;
+    var key = ["badge_data", badgeUrl].join(":");
+    db().hgetall(key, function(err, reply) {
+         if (err) {
+             completion(err, null, null);
+         } else if (reply) {
+             completion(null, reply.data, reply.content_type);
+         } else {
+             //we don't have the badge data - fetch it again
+             fetchBadgeData(badgeUrl, function(err, data, contentType) {
+                if (err) {
+                    completion(err, null, null);
+                } else {
+                    //save the badge data into redis
+                    db().hmset(key, "data", data, "content_type", contentType, function(err) {
+                        if (err) {
+                            completion(err, null, null);
+                        } else {
+                            //also expire in an hour
+                            db().expire(key, timeout, function(err) {
+                                if (err) {
+                                    completion(err, null, null);
+                                } else {
+                                    completion(null, data, contentType);
+                                }
+                            })
+                        }
+                    });
+                }
+             });
+         }
+    });
 }
 
 //completion: err, data, content-type
 function fetchBadgeData(badgeUrl, completion) {
+    console.log('Refetching badge data ' + badgeUrl);
     http.get(badgeUrl, function(response) {
 
         var contentType = response.headers['content-type'];
@@ -94,6 +126,9 @@ function fetchBadgeData(badgeUrl, completion) {
 }
 
 function fetchBadgeUrl(user, repo, branch, completion) {
+
+    //TODO: authenticated requests? private repos? better rate limit?
+    console.log('Refetching status for ' + user + "/" + repo + "/" + branch);
 
     var path = "/repos/" + user + "/" + repo + "/commits/" + branch + "/status";
     var options = {
