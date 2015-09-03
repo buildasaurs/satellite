@@ -1,6 +1,15 @@
 # satellite
 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://en.wikipedia.org/wiki/MIT_License)
+[![Blog](https://img.shields.io/badge/blog-honzadvorsky.com-green.svg)](http://honzadvorsky.com)
+[![Twitter Czechboy0](https://img.shields.io/badge/twitter-czechboy0-green.svg)](http://twitter.com/czechboy0)
+
 > Node.js server for providing build status badges for GitHub branches.
+
+Example badges:
+![example badge](http://img.shields.io/badge/build-passing-green.svg)
+![example badge](http://img.shields.io/badge/build-failing-red.svg)
+![example badge](http://img.shields.io/badge/build-unknown-gray.svg)
 
 Used by [Buildasaur](https://github.com/czechboy0/Buildasaur), [XcodeServerSDK](https://github.com/czechboy0/XcodeServerSDK) and other projects backed by Xcode Server to show a build status badge like the ones coming from hosted CI services. Since Xcode Server is self-hosted, if you use [Buildasaur](https://github.com/czechboy0/Buildasaur) to sync your build results from Xcode Server to GitHub, you can take advantage of Satellite to get a badge of your own.
 
