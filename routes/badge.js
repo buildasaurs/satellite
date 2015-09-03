@@ -188,11 +188,11 @@ function urlFromState(state) {
 
     var imgPath = 'http://img.shields.io/badge/';
     if (state === 'success') {
-        imgPath = imgPath + 'build-passing-green.svg';
+        imgPath = imgPath + 'build-passing-brightgreen.svg';
     } else if (state === 'failure') {
         imgPath = imgPath + 'build-failing-red.svg';
     } else {
-        imgPath = imgPath + 'build-unknown-gray.svg';
+        imgPath = imgPath + 'build-unknown-lightgray.svg';
     }
     return imgPath;
 }
