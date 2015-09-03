@@ -1,0 +1,1 @@
+DEBUG=satellite:* npm start

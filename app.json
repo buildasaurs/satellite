@@ -1,0 +1,5 @@
+{
+  "name": "satellite",
+  "description": "Node.js server for providing build status badges for GitHub branches.",
+  "repository": "https://github.com/czechboy0/satellite"
+}
