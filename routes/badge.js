@@ -19,7 +19,7 @@ router.get('/:user/:repo/:branch?', function(req, res, next) {
         if (err) {
             res.status(500).send(err);
         } else {
-            res.send(status);
+            res.header('Content-Type', contentType).send(data);
         }
     });
 });
