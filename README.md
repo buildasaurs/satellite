@@ -26,7 +26,7 @@ If you don't specify a branch, *master* will be used.
 
 # API
 
-## `/v1/badge/:USER/:REPO/:BRANCH?`
+### `/v1/badge/:USER/:REPO/:BRANCH?`
 And since the service is running on `https://stlt.herokuapp.com`, an example call would be
 
 ```
@@ -34,7 +34,7 @@ HTTP GET https://stlt.herokuapp.com/v1/badge/czechboy0/xcodeserversdk/swift-2
 ```
 which returns an SVG image of the badge.
 
-## `/v1/xcs_deeplink/:HOSTNAME/:BOT_ID/:INTEGRATION_ID`
+### `/v1/xcs_deeplink/:HOSTNAME/:BOT_ID/:INTEGRATION_ID`
 Returns 301 redirect to `xcbot://HOSTNAME/botID/BOT_ID/integrationID/INTEGRATION_ID` so that you can link to your Bots from e.g. GitHub, which blocks all non-https URL schemes.
 
 # details
