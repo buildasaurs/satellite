@@ -25,7 +25,6 @@ Add this to your README:
 If you don't specify a branch, *master* will be used.
 
 # API
-The whole service just has one endpoint
 
 ## `/v1/badge/:USER/:REPO/:BRANCH?`
 And since the service is running on `https://stlt.herokuapp.com`, an example call would be
@@ -34,6 +33,9 @@ And since the service is running on `https://stlt.herokuapp.com`, an example cal
 HTTP GET https://stlt.herokuapp.com/v1/badge/czechboy0/xcodeserversdk/swift-2
 ```
 which returns an SVG image of the badge.
+
+## `/v1/xcs_deeplink/:HOSTNAME/:BOT_ID/:INTEGRATION_ID`
+Returns 301 redirect to `xcbot://HOSTNAME/botID/BOT_ID/integrationID/INTEGRATION_ID` so that you can link to your Bots from e.g. GitHub, which blocks all non-https URL schemes.
 
 # details
 The service uses [Redis](http://redis.io) for caching of the status (1 minute) and of the badge image data (1 hour).
