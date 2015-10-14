@@ -8,7 +8,6 @@ var https = require('https');
 var http = require('http');
 var db = require('./redis');
 
-//TODO: branch?
 router.get('/:user/:repo/:branch?', function(req, res, next) {
     var params = req.params;
     var user = params.user;
