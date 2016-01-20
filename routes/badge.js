@@ -5,7 +5,6 @@
 var express = require('express');
 var router = express.Router();
 var https = require('https');
-var http = require('http');
 var db = require('./redis');
 
 router.get('/:user/:repo/:branch?', function(req, res, next) {
@@ -76,7 +75,7 @@ function getBadgeData(badgeUrl, completion) {
     db().hgetall(key, function(err, reply) {
          if (err) {
              completion(err, null, null);
-         } else if (reply) {
+         } else if (reply && reply.data && reply.data.length > 0) {
              completion(null, reply.data, reply.content_type);
          } else {
              //we don't have the badge data - fetch it again
@@ -108,7 +107,19 @@ function getBadgeData(badgeUrl, completion) {
 //completion: err, data, content-type
 function fetchBadgeData(badgeUrl, completion) {
     console.log('Refetching badge data ' + badgeUrl);
-    http.get(badgeUrl, function(response) {
+
+    var path = "/badge/" + badgeUrl;
+    var options = {
+        hostname: 'img.shields.io',
+        port: 443,
+        path: path,
+        method: 'GET',
+        headers: {
+            'User-Agent': 'satellite'
+        }
+    };
+
+    https.get(options, function(response) {
 
         var contentType = response.headers['content-type'];
         var data = '';
@@ -185,7 +196,7 @@ function rateLimit(headers) {
 
 function urlFromState(state) {
 
-    var imgPath = 'http://img.shields.io/badge/';
+    var imgPath = '';
     if (state === 'success') {
         imgPath = imgPath + 'build-passing-brightgreen.svg';
     } else if (state === 'failure') {
