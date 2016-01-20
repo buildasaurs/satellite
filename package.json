@@ -1,6 +1,6 @@
 {
   "name": "satellite",
-  "version": "0.0.0",
+  "version": "0.1",
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
@@ -14,5 +14,8 @@
     "morgan": "~1.6.1",
     "serve-favicon": "~2.3.0",
     "redis": "1.0.0"
+  },
+  "engines": {
+    "node": "5.0.0"
   }
 }
